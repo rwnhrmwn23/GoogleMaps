@@ -51,4 +51,16 @@ class LocationManager(private val context: Context) {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun getLastLocation(lastLocation: (Location) -> Unit) {
+        val lastLocationRequest = LastLocationRequest.Builder().build()
+        fusedLocationProvider.getLastLocation(lastLocationRequest)
+            .addOnFailureListener {
+                it.printStackTrace()
+            }
+            .addOnSuccessListener {
+                lastLocation.invoke(it)
+            }
+    }
+
 }

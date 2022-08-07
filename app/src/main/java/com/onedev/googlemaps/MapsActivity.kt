@@ -5,12 +5,15 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.onedev.googlemaps.databinding.ActivityMapsBinding
 import com.onedev.googlemaps.manager.LocationManager
@@ -28,6 +31,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
+    private var marker: Marker? = null
 
     private val locationManager: LocationManager by lazy {
         LocationManager(this)
@@ -42,6 +46,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        binding.tvResultCoordinate.setOnClickListener {
+            locationManager.getLastLocation {
+                Toast.makeText(this, it.toLatLng().toString(), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -103,6 +113,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.tvResultCoordinate.text = "${latLng.latitude}, ${latLng.longitude}"
 
         mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+
+        if (marker == null) {
+            val markerOption = MarkerOptions()
+                .position(latLng)
+            marker = mMap.addMarker(markerOption)
+        }
+        marker?.moveSmoothly(latLng)
 
         println("--------LOCATION UPDATE -> ${location.latitude}, ${location.longitude}")
     }
