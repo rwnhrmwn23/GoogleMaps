@@ -1,23 +1,37 @@
 package com.onedev.googlemaps
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
+import android.location.Location
 import android.os.Bundle
-
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.maps.android.PolyUtil
 import com.onedev.googlemaps.databinding.ActivityMapsBinding
+import com.onedev.googlemaps.manager.LocationManager
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.launch
+import pub.devrel.easypermissions.AfterPermissionGranted
+import pub.devrel.easypermissions.EasyPermissions
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    companion object {
+        const val RC_LOCATION = 23
+    }
+
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
+
+    private val locationManager: LocationManager by lazy {
+        LocationManager(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,5 +62,48 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .width(6F)
             .color(Color.RED)
         mMap.addPolyline(polyline)
+
+        getLocationWithPermission()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
+    @AfterPermissionGranted(value = RC_LOCATION)
+    private fun getLocationWithPermission() {
+        val fineLocation = Manifest.permission.ACCESS_FINE_LOCATION
+        val coarseLocation = Manifest.permission.ACCESS_COARSE_LOCATION
+        if (EasyPermissions.hasPermissions(this, fineLocation, coarseLocation)) {
+            getLocation()
+        } else {
+            EasyPermissions.requestPermissions(
+                this,
+                "Granted for location",
+                RC_LOCATION,
+                fineLocation, coarseLocation
+            )
+        }
+    }
+
+    private fun getLocation() {
+        MainScope().launch {
+            locationManager.getLocationFlow().collect(onLocationResult())
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun onLocationResult() = FlowCollector<Location> { location ->
+        val latLng = LatLng(location.latitude, location.longitude)
+        binding.tvResultCoordinate.text = "${latLng.latitude}, ${latLng.longitude}"
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+
+        println("--------LOCATION UPDATE -> ${location.latitude}, ${location.longitude}")
     }
 }
