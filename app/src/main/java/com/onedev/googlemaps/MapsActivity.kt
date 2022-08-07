@@ -1,5 +1,6 @@
 package com.onedev.googlemaps
 
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
@@ -9,6 +10,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
+import com.google.maps.android.PolyUtil
 import com.onedev.googlemaps.databinding.ActivityMapsBinding
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -30,8 +33,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        val routes = Sources.getResultRoutes()
+        val coordinates = routes.data?.route.orEmpty()
+            .map {
+                LatLng(it?.latitude ?: 0.0, it?.longitude ?: 0.0)
+            }
+
+        coordinates.firstOrNull()?.let {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 15F))
+        }
+
+        val polyline = PolylineOptions()
+            .addAll(coordinates)
+            .width(6F)
+            .color(Color.RED)
+        mMap.addPolyline(polyline)
     }
 }
