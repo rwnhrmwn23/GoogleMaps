@@ -1,4 +1,4 @@
-package com.onedev.googlemaps
+package com.onedev.googlemaps.utils
 
 import android.animation.ValueAnimator
 import android.location.Location

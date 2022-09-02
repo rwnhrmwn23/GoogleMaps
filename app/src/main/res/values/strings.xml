@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">GoogleMaps</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="picker_maps">Picker Maps</string>
+    <string name="user">User</string>
+    <string name="maps">Maps</string>
+    <string name="ok">OK</string>
 </resources>

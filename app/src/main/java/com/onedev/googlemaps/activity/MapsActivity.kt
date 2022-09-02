@@ -1,4 +1,4 @@
-package com.onedev.googlemaps
+package com.onedev.googlemaps.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,8 +15,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.onedev.googlemaps.R
+import com.onedev.googlemaps.Sources
 import com.onedev.googlemaps.databinding.ActivityMapsBinding
 import com.onedev.googlemaps.manager.LocationManager
+import com.onedev.googlemaps.utils.moveSmoothly
+import com.onedev.googlemaps.utils.toLatLng
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
@@ -56,6 +60,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.uiSettings.isCompassEnabled = true
+        mMap.uiSettings.isZoomControlsEnabled = true
 
         val routes = Sources.getResultRoutes()
         val coordinates = routes.data?.route.orEmpty()
